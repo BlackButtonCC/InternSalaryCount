@@ -1,9 +1,10 @@
 package indi.cc;
 
-import java.text.*;
-import java.util.Date;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
+
+import java.text.SimpleDateFormat;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 /**
  * 计算周末双休的工作日
@@ -24,12 +25,20 @@ public class Count {
     }
 
     /**
-     * 利用JDK的Date类等计算出时间，再用正则表达式进行匹配进行周末和工作日的识别。
+     * V1.0：利用JDK的Date类等计算出时间，再用正则表达式进行匹配进行周末和工作日的识别。
+     * V2.0：利用Joda-Time的LocalDate类
      * @return
      */
     public long countWorkday() {
         if (isRightDate(this.startDate) && isRightDate(this.endDate)) {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            LocalDate start = new LocalDate(this.startDate);
+            LocalDate end = new LocalDate(this.endDate);
+
+            long totalDays = Days.daysBetween(start, end).getDays();
+            long weekendDay = countWeekendDay(totalDays, start);
+
+            return totalDays - weekendDay;
+            /*SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
             try {
                 Date startDate = format.parse(this.startDate);
                 Date endDate = format.parse(this.endDate);
@@ -43,7 +52,7 @@ public class Count {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("程序错误，请参考上诉原因...");
+            System.out.println("程序错误，请参考上诉原因...");*/
         }
 
         return 0;
@@ -51,13 +60,22 @@ public class Count {
 
     /**
      * 算出周末的天数
-     * @param addDay 总共的天数
+     * @param totalDays 总共的天数
      * @return long 周末的天数
      */
-    public long countWeekendDay(long addDay) {
+    public long countWeekendDay(long totalDays, LocalDate startDate) {
         long count = 0;
-        long loop = addDay;
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        long loop = totalDays;
+
+        for (int i = 0; i < totalDays; i++) {
+            if (startDate.toString("e").equals("6") || startDate.toString("e").equals("7")) {
+                ++count;
+            }
+            startDate = startDate.plusDays(1);
+        }
+        
+        return count;
+        /*DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         for (int i = 0; i < loop; i++) {
             try {
                 Date date = new Date(format.parse(this.startDate).getTime() + 1000*3600*24*i);
@@ -68,9 +86,7 @@ public class Count {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-        }
-
-        return count;
+        }*/
     }
 
     /**
