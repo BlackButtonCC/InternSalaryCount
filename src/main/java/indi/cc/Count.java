@@ -34,7 +34,7 @@ public class Count {
             LocalDate start = new LocalDate(this.startDate);
             LocalDate end = new LocalDate(this.endDate);
 
-            long totalDays = Days.daysBetween(start, end).getDays();
+            long totalDays = Days.daysBetween(start, end).getDays() + 1;
             long weekendDay = countWeekendDay(totalDays, start);
 
             return totalDays - weekendDay;
