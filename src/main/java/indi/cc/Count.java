@@ -3,14 +3,20 @@ package indi.cc;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Locale;
 
 /**
  * 计算周末双休的工作日
  * Author : CharlesChen
  * Time : 2017-05-19 13:28
- * Version : 1.0 仅能计算周末双休的工作日，对于单双交替的工作日不适用，还是先搞明白怎么如何得知单双交替周的规则再说吧:)
+ * Version : 1.0 仅能计算周末双休的工作日。
  */
 public class Count {
     private String startDate;
@@ -38,21 +44,6 @@ public class Count {
             long weekendDay = countWeekendDay(totalDays, start);
 
             return totalDays - weekendDay;
-            /*SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-            try {
-                Date startDate = format.parse(this.startDate);
-                Date endDate = format.parse(this.endDate);
-                long startTime = startDate.getTime();
-                long endTime = endDate.getTime();
-                long allDay = (endTime - startTime) / (1000 * 60 * 60 * 24) + 1;
-                long weekendDay = countWeekendDay(allDay);
-
-                return allDay - weekendDay;
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        } else {
-            System.out.println("程序错误，请参考上诉原因...");*/
         }
 
         return 0;
@@ -75,18 +66,6 @@ public class Count {
         }
         
         return count;
-        /*DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        for (int i = 0; i < loop; i++) {
-            try {
-                Date date = new Date(format.parse(this.startDate).getTime() + 1000*3600*24*i);
-                Boolean isMatch = Pattern.matches("^Sun.*|^Sat.*", date.toString());
-                if (isMatch) {
-                    ++count;
-                }
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }*/
     }
 
     /**
@@ -107,6 +86,80 @@ public class Count {
         }
     }
 
+    /**
+     * 利用爬虫对节假日进行爬取。
+     * @return 返回当年节假日Map
+     */
+    public HashMap<String, String> getVacationDate() {
+        String url = "http://hq.sinajs.cn/?list=market_stock_sh";
+        HashMap<String, String> map = new HashMap<>(50);
+        StringBuffer httpContent = httpRequst(url);
+
+        try {
+            byte[] bytes = httpContent.toString().getBytes("gbk");
+            String s = new String(bytes, "gbk");
+            System.out.println(s);
+
+            /*Writer writer = new BufferedWriter(new FileWriter("aaa.txt"));
+            writer.write(s.toString());
+            writer.flush();
+            writer.close();*/
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /*try {
+            String s = null;
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream("aaa.txt"));
+            byte[] data1 = httpContent.toString().getBytes();
+            bufferedOutputStream.write(data1, 0, data1.length);
+            bufferedOutputStream.flush();
+            bufferedOutputStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+
+        /*try {
+            String s = new String(httpContent.toString().getBytes("utf-8"), "gbk");
+            System.out.println(s);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }*/
+
+        System.exit(0);
+
+        return map;
+    }
+
+    /**
+     * HTTP请求
+     * @param url 字符串的URL
+     * @return 返回网页内容
+     */
+    public StringBuffer httpRequst(String url) {
+        String line;
+        StringBuffer stringBuffer = new StringBuffer();
+        try {
+            URL handle = new URL(url);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(handle.openStream()));
+            while ((line = bufferedReader.readLine()) != null) {
+                //line = new String(line.getBytes("iso-8859-1"), "utf-8");
+                stringBuffer.append(line);
+            }
+            bufferedReader.close();
+
+            return stringBuffer;
+        } catch (Exception e) { // Report any errors that arise
+            stringBuffer.append(e.toString());
+            System.err.println(e);
+            System.err.println("Usage:   java   HttpClient   <URL>   [<filename>]");
+        }
+
+        return null;
+    }
     public String getStartDate() {
         return startDate;
     }
